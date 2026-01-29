@@ -159,15 +159,12 @@
 
     let materialIDCounter = 0;
 
-    // Apply theme instantly without refresh
     function applyTheme() {
       const mode = localStorage.getItem("theme") || "auto";
       const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const t = texts[document.getElementById("langSelect").value] || texts.th;
-      
       const shouldBeDark = mode === "dark" || (mode === "auto" && isSystemDark);
       document.body.classList.toggle("dark", shouldBeDark);
-      
       const themeBtn = document.getElementById("themeBtn");
       if (mode === "dark") themeBtn.textContent = t.darkMode;
       else if (mode === "light") themeBtn.textContent = t.lightMode;
@@ -178,13 +175,8 @@
       const modes = ["auto", "dark", "light"];
       let current = localStorage.getItem("theme") || "auto";
       localStorage.setItem("theme", modes[(modes.indexOf(current) + 1) % modes.length]);
-      applyTheme(); // Immediate update
+      applyTheme();
     }
-
-    // Auto-sync with system without refresh
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-      if (localStorage.getItem("theme") === "auto") applyTheme();
-    });
 
     function openTutorial() { document.getElementById("tutorialModal").style.display = "flex"; }
     function closeTutorial() { document.getElementById("tutorialModal").style.display = "none"; document.getElementById("tutVideo").pause(); }
@@ -278,10 +270,8 @@
 
     function saveData() {
       const data = {
-        workers: document.getElementById("workers").value, 
-        wage: document.getElementById("wage").value,
-        water: document.getElementById("water").value, 
-        electricity: document.getElementById("electricity").value,
+        workers: document.getElementById("workers").value, wage: document.getElementById("wage").value,
+        water: document.getElementById("water").value, electricity: document.getElementById("electricity").value,
         materials: Array.from(document.querySelectorAll("#materials .input-row:not(.removing)")).map(r => ({
           name: r.querySelector(".mat-name-input").value,
           qty: r.querySelectorAll("input[type='number']")[0].value,
@@ -294,8 +284,13 @@
 
     function resetAll() { 
       if(confirm("ต้องการรีเซ็ตข้อมูลทั้งหมดหรือไม่? / Clear all data?")) { 
-        localStorage.clear(); 
-        location.reload(); // Reset needs reload to clear all states
+        localStorage.removeItem("calcData_v243");
+        document.getElementById("materials").innerHTML = "";
+        document.getElementById("workers").value = "";
+        document.getElementById("wage").value = "";
+        document.getElementById("water").value = "";
+        document.getElementById("electricity").value = "";
+        calculate();
       } 
     }
 
@@ -310,12 +305,10 @@
       document.getElementById("materials").innerHTML = "";
       if (saved.materials?.length) {
         saved.materials.forEach(m => addMaterial(m.name, m.qty, m.cost, m.profit));
-      } else {
-        addMaterial();
-      }
-      
-      switchLang(); // This calls applyTheme()
+      } 
+      // Removed the 'else addMaterial()' to keep it empty on start!
 
+      switchLang();
       setTimeout(() => {
         const loader = document.getElementById('loader');
         loader.classList.add('loader-hidden');
